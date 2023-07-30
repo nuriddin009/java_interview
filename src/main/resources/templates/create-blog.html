@@ -1,0 +1,57 @@
+<html
+        xmlns:th="http://thymeleaf.org"
+        xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+        layout:decorate="~{layout}">
+<head>
+    <title>Club Create</title>
+</head>
+<body class="d-flex flex-column h-100">
+<main class="flex-shrink-0">
+    <section layout:fragment="body" class="py-5">
+        <div class="container card col-md-6 offset-3 p-3">
+            <h3 class="text-center">Create Your Blog</h3>
+            <form role="form" method="post" th:action="@{/blog/new}" th:object="${blog}">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="title"><h3>Title</h3></label>
+                        <input
+                                type="text"
+                                class="form-control"
+                                id="title"
+                                name="title"
+                                th:field="*{title}"
+                                placeholder="Title">
+                        <p th:if="${#fields.hasErrors('title')}" class="text-danger" th:errors="*{title}"></p>
+                    </div>
+                    <div class="form-group">
+                        <label for="topic"><h3>Topic</h3></label>
+                        <input
+                                type="text"
+                                class="form-control"
+                                id="topic"
+                                name="topic"
+                                th:field="*{topic}"
+                                placeholder="Topic">
+                        <p th:if="${#fields.hasErrors('topic')}" class="text-danger" th:errors="*{topic}"></p>
+                    </div>
+                </div>
+                <div class="form-group mb-3">
+                    <label for="text"><h3>Text</h3></label>
+                    <textarea
+                            name="text"
+                            class="form-control"
+                            id="text"
+                            th:field="*{text}"
+                            cols="30"
+                            rows="10"
+                            placeholder="Text"
+                    ></textarea>
+                    <p th:if="${#fields.hasErrors('text')}" class="text-danger" th:errors="*{text}"></p>
+                </div>
+                <button type="submit" class="btn btn-dark text-end">Create blog</button>
+            </form>
+        </div>
+    </section>
+</main>
+</body>
+</html>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Comments</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        .card-blog {
+            width: 50%;
+            padding: 1rem;
+            border: 2px solid;
+            margin: 20px 0;
+        }
+
+    </style>
+
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body class="w-100 d-flex flex-column align-items-center">
+
+<a th:href="@{/blogs}" class="h1">
+    <button class="btn btn-dark">Blogs</button>
+</a>
+
+<h1 class="text-center">Comments</h1>
+
+<div class="card-blog">
+    <div class="mb-3">
+
+        <div style="display: flex;
+        justify-content: flex-start;
+        align-items: center">
+            <img width="50" height="50"
+                 src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSTONw5I13--HHukh79TX6C1BautXsORAS0s8UC4m-fRA&s"
+                 alt="avatar">
+            <p class="p-3">
+                <span th:text="${blog?.user?.firstname}"></span>
+
+                <span th:text="${blog?.user?.lastname}"></span>
+            </p>
+        </div>
+
+        <p><b style="color: red">Title: </b> <span th:text="${blog.title}"></span></p>
+        <p><b style="color: red">Topic: </b> <span th:text="${blog.topic}"></span></p>
+        <p><b style="color: red">Text: </b><span th:utext="${blog.text}"></span></p>
+        <p
+                th:text="${#temporals.format(blog.createdAt, 'yyyy-MM-dd HH:mm:ss')}"></p>
+
+    </div>
+</div>
+
+<form
+        class="w-50 d-flex flex-column gap-2 align-items-center align-items-end"
+        role="form" method="post" th:action="@{/comments/{blogId}(blogId=${blog.id})}" th:object="${commentDto}">
+    <label for="description"></label>
+    <textarea
+            type="text"
+            class="form-control d-block"
+            id="description"
+            name="description"
+            maxlength="400"
+            th:field="*{description}"
+            placeholder="Comment"></textarea>
+    <p th:if="${#fields.hasErrors('description')}" class="text-danger d-block" th:errors="*{description}"></p>
+    <button type="submit" class="btn btn-dark float-end">Comment</button>
+</form>
+
+
+<div class="d-flex flex-column align-items-lg-start w-50 gap-3 p-lg-2">
+    <div th:each="comment :${comments}" class="mb-4 d-flex align-items-start">
+        <div>
+            <img
+                    width="50" height="50"
+                    style="border-radius: 50%"
+                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSTONw5I13--HHukh79TX6C1BautXsORAS0s8UC4m-fRA&s"
+                    alt="asdasd">
+        </div>
+
+        <div style="transform: scale(0.8)">
+            <h6 class="d-flex align-items-center gap-1"><span th:text="${comment.user.firstname}"></span>
+                <span th:text="${comment.user.lastname}"></span>
+                <i th:if="${comment.user.roles.size()>1}" class="fa-solid fa-circle-check" style="color: #0f67ff;"></i>
+                <small
+                        th:text="${#temporals.format(comment.createdAt, 'yyyy-MM-dd HH:mm')}"></small>
+            </h6>
+            <p style="max-width: 50%;word-break: break-all;" th:text="${comment.description}"></p>
+            <div class="d-flex gap-3 mt-2">
+                <div class="d-flex gap-2 align-items-center">
+                    <a th:href="@{/comments/{likeType}/{commentId}(likeType='LIKE', commentId=${comment.id})}">
+                        <i class="fa-regular fa-thumbs-up fa-2xl"></i>
+                    </a>
+                    <h5 th:text="${comment.likes}"></h5>
+                </div>
+                <div class="d-flex gap-3 align-items-center">
+                    <a th:href="@{/comments/{likeType}/{commentId}(likeType='DISLIKE', commentId=${comment.id})}">
+                        <i class="fa-regular fa-thumbs-down fa-2xl"></i>
+                    </a>
+                    <h5
+                            th:text="${comment.dislikes}"></h5>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+</body>
+</html>

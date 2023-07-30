@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Comment Moderator</title>
+    <style>
+        .card-blog {
+            width: 50%;
+            padding: 1rem;
+            border: 2px solid;
+            margin: 20px 0;
+        }
+
+    </style>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+
+
+<a th:href="@{/verify_blog}">
+    <button class="btn btn-dark">Verify Blogs page</button>
+</a>
+
+<div class="card-blog">
+    <div class="mb-3">
+
+        <div style="display: flex;
+        justify-content: flex-start;
+        align-items: center">
+            <img width="50" height="50"
+                 src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSTONw5I13--HHukh79TX6C1BautXsORAS0s8UC4m-fRA&s"
+                 alt="avatar">
+            <p class="p-3">
+                <span th:text="${blog?.user?.firstname}"></span>
+
+                <span th:text="${blog?.user?.lastname}"></span>
+            </p>
+        </div>
+
+        <p><b style="color: red">Title: </b> <span th:text="${blog.title}"></span></p>
+        <p><b style="color: red">Topic: </b> <span th:text="${blog.topic}"></span></p>
+        <p><b style="color: red">Text: </b><span th:utext="${blog.text}"></span></p>
+        <p
+                th:text="${#temporals.format(blog.createdAt, 'yyyy-MM-dd HH:mm:ss')}"></p>
+
+    </div>
+</div>
+
+
+<table class="table mt-4">
+    <thead class="bg-dark text-white">
+    <tr>
+        <th>Creator</th>
+        <th>Comment</th>
+        <th>Action</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="comment :${comments}">
+        <td>
+            <span th:text="${comment.user.firstname}"></span>
+
+            <span th:text="${comment.user.lastname}"></span>
+        </td>
+        <td th:text="${comment.description}"></td>
+        <td>
+            <a th:href="@{/comments/check/{commentId}/{verify}(commentId=${comment.id},verify=true)}">
+                <button th:if="${!comment.checked}" class="btn btn-success">Tasdiqlash</button>
+            </a>
+            <a th:href="@{/comments/check/{commentId}/{verify}(commentId=${comment.id},verify=false)}">
+                <button th:if="${comment.checked}" class="btn btn-danger">Bekor qilish</button>
+            </a>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+</body>
+</html>
