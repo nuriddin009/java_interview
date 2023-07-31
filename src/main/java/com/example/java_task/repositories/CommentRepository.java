@@ -10,8 +10,9 @@ import java.util.UUID;
 @Repository
 public interface CommentRepository extends JpaRepository<Comment, Long> {
 
-    List<Comment> findAllByBlogIdOrderByCreatedAtDesc(Long blogId);
+    List<Comment> findAllByBlogIdAndCheckedOrderByCreatedAtDesc(Long blogId, Boolean checked);
 
+    List<Comment> findAllByBlogIdOrderByCreatedAtDesc(Long blogId);
 
 
 }

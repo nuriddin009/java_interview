@@ -43,7 +43,7 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public List<Comment> getBlogComments(Long blogId) {
-        return commentRepository.findAllByBlogIdOrderByCreatedAtDesc(blogId);
+        return commentRepository.findAllByBlogIdAndCheckedOrderByCreatedAtDesc(blogId, true);
     }
 
     @Override

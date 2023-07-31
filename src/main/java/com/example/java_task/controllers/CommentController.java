@@ -5,6 +5,7 @@ import com.example.java_task.dto.CommentDto;
 import com.example.java_task.entities.Blog;
 import com.example.java_task.entities.Comment;
 import com.example.java_task.repositories.BlogRepository;
+import com.example.java_task.repositories.CommentRepository;
 import com.example.java_task.services.CommentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ public class CommentController {
 
     private final CommentService service;
     private final BlogRepository blogRepository;
+    private final CommentRepository commentRepository;
 
     @GetMapping("{blogId}")
     public String getPostComments(@PathVariable Long blogId, Model model) {
@@ -61,7 +63,7 @@ public class CommentController {
     public String verifyComment(@PathVariable Long blogId, Model model) {
         if (service.isModerator()) {
             Blog blog = blogRepository.getReferenceById(blogId);
-            model.addAttribute("comments", service.getBlogComments(blogId));
+            model.addAttribute("comments", commentRepository.findAllByBlogIdOrderByCreatedAtDesc(blogId));
             model.addAttribute("blog", blog);
             return "moderator-comment";
         }
@@ -77,7 +79,7 @@ public class CommentController {
 
         Blog blog = comment.getBlog();
         model.addAttribute("comments",
-                service.getBlogComments(blog.getId()));
+                commentRepository.findAllByBlogIdOrderByCreatedAtDesc(blog.getId()));
         model.addAttribute("blog", blog);
         return "moderator-comment";
     }
