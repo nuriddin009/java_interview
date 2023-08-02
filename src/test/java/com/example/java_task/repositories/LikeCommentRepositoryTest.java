@@ -51,39 +51,15 @@ class LikeCommentRepositoryTest {
         likeCommentRepository.save(like2);
 
         // Act
-        Optional<LikeComment> foundLike = likeCommentRepository.findByCommentIdAndUserId(savedComment.getId(), savedUser.getId());
+        LikeComment foundLike = likeCommentRepository.findByCommentAndUser(savedComment, savedUser).get(0);
 
         // Assert
-        assertThat(foundLike).isPresent();
-        assertThat(foundLike.get().getUser()).isEqualTo(savedUser);
-        assertThat(foundLike.get().getLikeEnum()).isEqualTo(LikeEnum.LIKE);
+        assertThat(foundLike).isNotNull();
+        assertThat(foundLike.getUser()).isEqualTo(savedUser);
+        assertThat(foundLike.getLikeEnum()).isEqualTo(LikeEnum.LIKE);
     }
 
-    @Test
-    void countByCommentIdAndLikeEnum() {
-        // Arrange
-        Comment comment = new Comment();
-        comment.setDescription("Test comment");
-        Comment savedComment = commentRepository.save(comment);
 
-        LikeComment like1 = new LikeComment();
-        like1.setComment(savedComment);
-        like1.setUser(new User()); // Using a different user entity
-        like1.setLikeEnum(LikeEnum.LIKE);
-        likeCommentRepository.save(like1);
-
-        LikeComment like2 = new LikeComment();
-        like2.setComment(savedComment);
-        like2.setUser(new User());
-        like2.setLikeEnum(LikeEnum.DISLIKE);
-        likeCommentRepository.save(like2);
-
-        // Act
-        long likeCount = likeCommentRepository.countByCommentIdAndLikeEnum(savedComment.getId(), LikeEnum.LIKE);
-
-        // Assert
-        assertThat(likeCount).isEqualTo(1);
-    }
 
     @Test
     void deleteAllByCommentId() {

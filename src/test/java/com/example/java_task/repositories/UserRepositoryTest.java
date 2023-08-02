@@ -11,7 +11,6 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-
 @DataJpaTest
 class UserRepositoryTest {
 

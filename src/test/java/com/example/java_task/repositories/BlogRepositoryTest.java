@@ -55,17 +55,16 @@ class BlogRepositoryTest {
 
         Blog uncheckedBlog = new Blog();
         uncheckedBlog.setTitle("Unchecked Blog");
-        checkedBlog1.setChecked(false);
+        uncheckedBlog.setChecked(false); // Corrected line
         blogRepository.save(uncheckedBlog);
 
         // Act
-        List<Blog> checkedBlogs = blogRepository.findByCheckedOrderByCreatedAtDesc(true);
+        List<Blog> checkedBlogs = blogRepository.findAllByCheckedOrderByCreatedAtDesc(true);
 
         // Assert
         assertThat(checkedBlogs).isNotEmpty();
         assertThat(checkedBlogs).hasSize(2);
         assertThat(checkedBlogs.get(0).getTitle()).isEqualTo("Checked Blog 2");
         assertThat(checkedBlogs.get(1).getTitle()).isEqualTo("Checked Blog 1");
-
     }
 }

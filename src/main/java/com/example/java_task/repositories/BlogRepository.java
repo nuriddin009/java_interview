@@ -11,7 +11,7 @@ public interface BlogRepository extends JpaRepository<Blog, Long> {
 
     List<Blog> findAllByOrderByCreatedAtDesc();
 
-    List<Blog> findByCheckedOrderByCreatedAtDesc(boolean check);
+    List<Blog> findAllByCheckedOrderByCreatedAtDesc(boolean check);
 
 
 

@@ -3,27 +3,35 @@ package com.example.java_task.services.impl;
 import com.example.java_task.dto.CommentDto;
 import com.example.java_task.entities.Blog;
 import com.example.java_task.entities.Comment;
+import com.example.java_task.entities.LikeComment;
 import com.example.java_task.entities.User;
+import com.example.java_task.entities.enums.LikeEnum;
 import com.example.java_task.repositories.BlogRepository;
 import com.example.java_task.repositories.CommentRepository;
 import com.example.java_task.repositories.LikeCommentRepository;
 import com.example.java_task.repositories.UserRepository;
 import com.example.java_task.security.SecurityUtil;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.*;
 
 
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 class CommentServiceImplTest {
 
 
@@ -131,50 +139,122 @@ class CommentServiceImplTest {
     void deleteComment() {
     }
 
+//    @Test
+//    void likeOrDislike() {
+//        // Arrange
+//        Long commentId = 1L;
+//        String likeType = "LIKE";
+//        String username = "testuser";
+//
+//        Comment comment = new Comment();
+//        comment.setId(commentId);
+//        comment.setDescription("Test comment");
+//        comment.setLikes(0);
+//        comment.setDislikes(0);
+//
+//        User user = new User();
+//        user.setUsername(username);
+//
+////        when(SecurityUtil.getSessionUser()).thenReturn(username);
+//        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+//        when(commentRepository.getReferenceById(commentId)).thenReturn(comment);
+//        when(likeCommentRepository.findByCommentAndUser(comment, user)).thenReturn(Optional.empty());
+//        when(likeCommentRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+//        when(commentRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+//
+//        // Act
+//        Comment result = commentService.likeOrDislike(likeType, commentId);
+//
+//        // Assert
+//        assertThat(result).isNotNull();
+//        assertThat(result.getId()).isEqualTo(commentId);
+//        assertThat(result.getLikes()).isEqualTo(1);
+//        assertThat(result.getDislikes()).isEqualTo(0);
+//
+//        // Reset the comment likes and dislikes for the next test
+//        comment.setLikes(0);
+//        comment.setDislikes(0);
+//
+//        // Test Dislike
+//        likeType = "DISLIKE";
+//        result = commentService.likeOrDislike(likeType, commentId);
+//
+//        assertThat(result).isNotNull();
+//        assertThat(result.getId()).isEqualTo(commentId);
+//        assertThat(result.getLikes()).isEqualTo(0);
+//        assertThat(result.getDislikes()).isEqualTo(1);
+//    }
+
+
     @Test
-    void likeOrDislike() {
+    void testLikeOrDislike() {
         // Arrange
         Long commentId = 1L;
         String likeType = "LIKE";
-        String username = "testuser";
 
-        Comment comment = new Comment();
-        comment.setId(commentId);
-        comment.setDescription("Test comment");
-        comment.setLikes(0);
-        comment.setDislikes(0);
+        Comment referenceComment = new Comment();
+        referenceComment.setId(commentId);
+        referenceComment.setLikes(5);
+        referenceComment.setDislikes(3);
+
 
         User user = new User();
-        user.setUsername(username);
+        user.setUsername("testuser");
 
-        when(SecurityUtil.getSessionUser()).thenReturn(username);
-        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
-        when(commentRepository.getReferenceById(commentId)).thenReturn(comment);
-        when(likeCommentRepository.findByCommentIdAndUserId(commentId, user.getId())).thenReturn(Optional.empty());
-        when(likeCommentRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
-        when(commentRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        List<LikeComment> existingLikes = new ArrayList<>();
+        existingLikes.add(LikeComment.builder()
+                .comment(referenceComment)
+                .user(user)
+                .likeEnum(LikeEnum.LIKE)
+                .build());
+
+        when(commentRepository.getReferenceById(commentId)).thenReturn(referenceComment);
+        when(userRepository.findByUsername(any())).thenReturn(Optional.of(user));
+        when(likeCommentRepository.findByCommentAndUser(referenceComment, user)).thenReturn(existingLikes);
+
 
         // Act
-        Comment result = commentService.likeOrDislike(likeType, commentId);
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn("testuser");
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        Comment updatedComment = commentService.likeOrDislike(likeType, commentId);
 
         // Assert
-        assertThat(result).isNotNull();
-        assertThat(result.getId()).isEqualTo(commentId);
-        assertThat(result.getLikes()).isEqualTo(1);
-        assertThat(result.getDislikes()).isEqualTo(0);
+        assertThat(updatedComment).isNotNull();
+        verify(likeCommentRepository, times(1)).delete(any(LikeComment.class));
+        verify(likeCommentRepository, times(0)).save(any(LikeComment.class));
+        verify(commentRepository, times(1)).save(referenceComment);
+        assertThat(updatedComment.getLikes()).isEqualTo(4);
+        assertThat(updatedComment.getDislikes()).isEqualTo(3);
 
-        // Reset the comment likes and dislikes for the next test
-        comment.setLikes(0);
-        comment.setDislikes(0);
+        // Act: Like the comment (no previous likes/dislikes)
+        when(likeCommentRepository.findByCommentAndUser(referenceComment, user)).thenReturn(new ArrayList<>());
+        updatedComment = commentService.likeOrDislike(likeType, commentId);
 
-        // Test Dislike
+        // Assert
+        assertThat(updatedComment).isNotNull();
+        verify(likeCommentRepository, times(0)).delete(any(LikeComment.class));
+        verify(likeCommentRepository, times(1)).save(any(LikeComment.class));
+        verify(commentRepository, times(2)).save(referenceComment);
+        assertThat(updatedComment.getLikes()).isEqualTo(5);
+        assertThat(updatedComment.getDislikes()).isEqualTo(3);
+
+        // Act: Dislike the comment (previously liked)
         likeType = "DISLIKE";
-        result = commentService.likeOrDislike(likeType, commentId);
+        existingLikes.get(0).setLikeEnum(LikeEnum.LIKE);
+        when(likeCommentRepository.findByCommentAndUser(referenceComment, user)).thenReturn(existingLikes);
+        updatedComment = commentService.likeOrDislike(likeType, commentId);
 
-        assertThat(result).isNotNull();
-        assertThat(result.getId()).isEqualTo(commentId);
-        assertThat(result.getLikes()).isEqualTo(0);
-        assertThat(result.getDislikes()).isEqualTo(1);
+        // Assert
+        assertThat(updatedComment).isNotNull();
+        verify(likeCommentRepository, times(1)).delete(any(LikeComment.class));
+        verify(likeCommentRepository, times(2)).save(any(LikeComment.class));
+        verify(commentRepository, times(3)).save(referenceComment);
+        assertThat(updatedComment.getLikes()).isEqualTo(4);
+        assertThat(updatedComment.getDislikes()).isEqualTo(4);
     }
 
     @Test

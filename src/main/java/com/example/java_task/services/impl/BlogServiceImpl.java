@@ -31,16 +31,19 @@ public class BlogServiceImpl implements BlogService {
 
     @Override
     public List<Blog> getAll() {
-        return blogRepository.findByCheckedOrderByCreatedAtDesc(true);
+        return blogRepository.findAllByCheckedOrderByCreatedAtDesc(true);
     }
 
     @Override
     public Blog createBlog(BlogDto blogDto) {
         String username = SecurityUtil.getSessionUser();
         Optional<User> user = userRepository.findByUsername(username);
-        Blog blog = mapToBlog(blogDto);
-        blog.setUser(user.get());
-        return blogRepository.save(blog);
+        if (user.isPresent()){
+            Blog blog = mapToBlog(blogDto);
+            blog.setUser(user.get());
+            return blogRepository.save(blog);
+        }
+       return null;
     }
 
     @Override
@@ -56,10 +59,15 @@ public class BlogServiceImpl implements BlogService {
                     blog.setTopic(blogDto.getTopic());
                     blog.setTitle(blogDto.getTitle());
                     return blogRepository.save(blog);
+                } else {
+                    throw new IllegalArgumentException("User is not allowed to update this blog.");
                 }
+            } else {
+                throw new IllegalArgumentException("Blog with the specified ID not found.");
             }
+        } else {
+            throw new IllegalArgumentException("User not found.");
         }
-        return null;
     }
 
 

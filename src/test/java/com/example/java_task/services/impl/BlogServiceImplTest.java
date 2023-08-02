@@ -11,20 +11,27 @@ import com.example.java_task.repositories.UserRepository;
 import com.example.java_task.security.SecurityUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 class BlogServiceImplTest {
 
     @Mock
@@ -62,7 +69,7 @@ class BlogServiceImplTest {
 
         List<Blog> blogList = List.of(blog1, blog2);
 
-        when(blogRepository.findByCheckedOrderByCreatedAtDesc(true)).thenReturn(blogList);
+        when(blogRepository.findAllByCheckedOrderByCreatedAtDesc(true)).thenReturn(blogList);
 
         // Act
         List<Blog> result = blogService.getAll();
@@ -85,6 +92,14 @@ class BlogServiceImplTest {
         User user = new User();
         user.setUsername(username);
 
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn("testuser");
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+
+        Mockito.mockStatic(SecurityUtil.class);
         when(SecurityUtil.getSessionUser()).thenReturn(username);
         when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
         when(blogRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
@@ -114,12 +129,19 @@ class BlogServiceImplTest {
 
         User user = new User();
         user.setUsername(username);
+        userRepository.save(user);
 
         Blog existingBlog = new Blog();
         existingBlog.setId(blogId);
         existingBlog.setTitle("Old Blog");
         existingBlog.setText("This is the old blog text.");
         existingBlog.setUser(user);
+
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn("testuser");
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
 
         when(SecurityUtil.getSessionUser()).thenReturn(username);
         when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
@@ -130,7 +152,9 @@ class BlogServiceImplTest {
         Blog result = blogService.updateBlog(blogId, updatedBlogDto);
 
         // Assert
-        assertThat(result).isNotNull();
+        assertThrows(IllegalArgumentException.class, () -> {
+            blogService.updateBlog(blogId, updatedBlogDto);
+        });
         assertThat(result.getId()).isEqualTo(blogId);
         assertThat(result.getTitle()).isEqualTo("Updated Blog");
         assertThat(result.getText()).isEqualTo("This is an updated blog.");
@@ -152,6 +176,7 @@ class BlogServiceImplTest {
         existingBlog.setId(blogId);
         existingBlog.setTitle("Test Blog");
         existingBlog.setChecked(false);
+        blogRepository.save(existingBlog);
 
         when(blogRepository.getReferenceById(blogId)).thenReturn(existingBlog);
         when(blogRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));

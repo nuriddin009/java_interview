@@ -63,10 +63,10 @@ public class CommentServiceImpl implements CommentService {
     public Comment likeOrDislike(String likeType, Long commentId) {
         Comment referenceById = commentRepository.getReferenceById(commentId);
         User user = userRepository.findByUsername(SecurityUtil.getSessionUser()).get();
-        Optional<LikeComment> byCommentIdAndUserId = likeCommentRepository.findByCommentIdAndUserId(referenceById.getId(), user.getId());
+        List<LikeComment> byCommentIdAndUserId = likeCommentRepository.findByCommentAndUser(referenceById, user);
 
-        if (byCommentIdAndUserId.isPresent()) {
-            LikeComment likeComment = byCommentIdAndUserId.get();
+        if (byCommentIdAndUserId.size() > 0) {
+            LikeComment likeComment = byCommentIdAndUserId.get(0);
 
             if (likeComment.getLikeEnum().equals(LikeEnum.valueOf(likeType))) {
                 likeCommentRepository.delete(likeComment);

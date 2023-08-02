@@ -20,7 +20,7 @@ public class LikeComment extends AbstractEntity {
     @ManyToOne(fetch = FetchType.EAGER)
     private Comment comment;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(cascade = CascadeType.PERSIST)
     private User user;
 
     @Enumerated(EnumType.STRING)

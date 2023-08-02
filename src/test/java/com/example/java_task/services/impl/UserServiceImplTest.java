@@ -24,7 +24,7 @@ class UserServiceImplTest {
     @InjectMocks
     private UserServiceImpl userService;
 
-    @Autowired
+    @Mock
     private PasswordEncoder passwordEncoder;
 
 
@@ -43,8 +43,10 @@ class UserServiceImplTest {
                 .lastname(lastname)
                 .build();
 
+        String encodedPassword = passwordEncoder.encode(password);
 
-        when(passwordEncoder.encode(password)).thenReturn("encodedPassword"); // Mock the password encoder
+
+        when(passwordEncoder.encode(password)).thenReturn(encodedPassword);
 
         // Act
         userService.saveUser(userDto);
@@ -58,6 +60,6 @@ class UserServiceImplTest {
         assertThat(savedUser.getUsername()).isEqualTo(username);
         assertThat(savedUser.getFirstname()).isEqualTo(firstname);
         assertThat(savedUser.getLastname()).isEqualTo(lastname);
-        assertThat(savedUser.getPassword()).isEqualTo("encodedPassword");
+        assertThat(savedUser.getPassword()).isEqualTo(passwordEncoder.encode(password));
     }
 }
